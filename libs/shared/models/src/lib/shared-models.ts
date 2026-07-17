@@ -28,3 +28,31 @@ export interface UpdateBookInput {
 export interface DeleteBookResponse {
   deleted: true;
 }
+
+export type ChatRole = 'user' | 'assistant';
+
+export interface ChatSummary {
+  _id: string;
+  title: string;
+  lastMessage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatMessage {
+  _id: string;
+  chatId: string;
+  role: ChatRole;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ChatStreamEvent =
+  | { type: 'delta'; content: string }
+  | { type: 'done'; message: ChatMessage }
+  | { type: 'error'; message: string };
+
+export interface DeleteChatResponse {
+  deleted: true;
+}

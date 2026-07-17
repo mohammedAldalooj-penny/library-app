@@ -1,7 +1,7 @@
 # Leafmark Library
 
 A full-stack personal library built as an Nx monorepo with Angular, NestJS,
-Mongoose, and MongoDB.
+Mongoose, MongoDB, and Gemini on Vertex AI.
 
 ## Requirements
 
@@ -21,7 +21,8 @@ Open http://localhost:4200. The Angular development server proxies `/api` to
 the NestJS API at http://localhost:3000.
 
 The defaults work without an environment file. To customize them, copy
-`.env.example` to `.env`.
+`.env.example` to `.env`. AI chat requires a base64-encoded Google Cloud
+service-account JSON value in `GOOGLE_CREDS_B64`; keep it server-side only.
 
 ## Commands
 
@@ -50,3 +51,8 @@ npx nx graph      # Explore the monorepo graph
 - `POST /api/books`
 - `PATCH /api/books/:id`
 - `DELETE /api/books/:id`
+- `GET /api/chats`
+- `POST /api/chats`
+- `GET /api/chats/:id/messages`
+- `POST /api/chats/:id/messages` (streaming NDJSON response)
+- `DELETE /api/chats/:id`

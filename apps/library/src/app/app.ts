@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { BooksPage } from './features/books/books-page';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-  imports: [BooksPage],
+  imports: [RouterOutlet],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',

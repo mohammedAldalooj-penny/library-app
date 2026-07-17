@@ -1,0 +1,182 @@
+<div class="chat-shell" [class.sidebar-visible]="sidebarOpen()">
+  <button
+    class="sidebar-scrim"
+    type="button"
+    aria-label="Close chat history"
+    (click)="toggleSidebar()"
+  ></button>
+
+  <aside class="sidebar">
+    <div class="sidebar__top">
+      <a class="brand" routerLink="/" aria-label="Back to Leafmark library">
+        <span class="brand__mark" aria-hidden="true">L</span>
+        <span>Leafmark</span>
+      </a>
+      <button class="close-sidebar" type="button" (click)="toggleSidebar()">
+        <span class="visually-hidden">Close chat history</span>
+        ×
+      </button>
+    </div>
+
+    <button class="new-chat" type="button" (click)="newChat()">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5v14M5 12h14"></path>
+      </svg>
+      New chat
+    </button>
+
+    <div class="history-heading">
+      <span>Conversations</span>
+      <span>{{ chats().length }}</span>
+    </div>
+
+    <nav class="history" aria-label="Chat history">
+      @for (chat of chats(); track trackChat($index, chat)) {
+      <div class="history-row" [class.active]="chat._id === activeChatId()">
+        <button class="history-item" type="button" (click)="selectChat(chat)">
+          <span class="history-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M5 17.5 3.5 21l4.2-1.5c1.2.6 2.7 1 4.3 1 5 0 9-3.6 9-8s-4-8-9-8-9 3.6-9 8c0 1.9.8 3.6 2 5Z"
+              ></path>
+            </svg>
+          </span>
+          <span class="history-item__copy">
+            <strong>{{ chat.title }}</strong>
+            <small>{{ chat.lastMessage || 'Start a conversation' }}</small>
+          </span>
+        </button>
+        <button
+          class="delete-chat"
+          type="button"
+          aria-label="Delete chat"
+          (click)="deleteChat($event, chat)"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"></path>
+          </svg>
+        </button>
+      </div>
+      }
+    </nav>
+
+    <div class="sidebar__footer">
+      <span class="status-dot"></span>
+      <span>
+        <strong>Gemini 2.5 Flash</strong>
+        <small>Vertex AI · Connected</small>
+      </span>
+    </div>
+  </aside>
+
+  <section class="chat-panel">
+    <header class="chat-header">
+      <button class="menu-button" type="button" (click)="toggleSidebar()">
+        <span class="visually-hidden">Open chat history</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16"></path>
+        </svg>
+      </button>
+      <div class="chat-header__title">
+        <span class="ai-orb" aria-hidden="true">✦</span>
+        <span>
+          <strong>Leafmark AI</strong>
+          <small>Your reading companion</small>
+        </span>
+      </div>
+      <a class="library-link" routerLink="/">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 5.5 12 3l8 2.5v14L12 17l-8 2.5v-14Z"></path>
+          <path d="M12 3v14"></path>
+        </svg>
+        Library
+      </a>
+    </header>
+
+    <div #messageViewport class="messages" aria-live="polite">
+      @if (loadingHistory()) {
+      <div class="history-loader"><span></span><span></span><span></span></div>
+      } @else if (!messages().length) {
+      <div class="welcome">
+        <div class="welcome__mark" aria-hidden="true">
+          <span>✦</span>
+        </div>
+        <p class="eyebrow">Leafmark intelligence</p>
+        <h1>What are we<br />exploring today?</h1>
+        <p class="welcome__intro">
+          Ask about your collection, discover your next read, unpack an idea, or
+          simply start a conversation.
+        </p>
+        <div class="suggestions">
+          @for (suggestion of suggestions; track suggestion) {
+          <button type="button" (click)="send(suggestion)">
+            <span>{{ $index + 1 }}</span>
+            {{ suggestion }}
+            <b aria-hidden="true">↗</b>
+          </button>
+          }
+        </div>
+      </div>
+      } @else {
+      <div class="message-list">
+        @for (message of messages(); track trackMessage($index, message)) {
+        <article
+          class="message"
+          [class.message--user]="message.role === 'user'"
+        >
+          <div class="message__avatar" aria-hidden="true">
+            {{ message.role === 'assistant' ? '✦' : 'P' }}
+          </div>
+          <div class="message__content">
+            <p class="message__role">
+              {{ message.role === 'assistant' ? 'Leafmark AI' : 'You' }}
+            </p>
+            @if (message.content) {
+            <div
+              class="markdown"
+              [innerHTML]="message.content | markdown"
+            ></div>
+            } @else {
+            <div class="typing" aria-label="Leafmark AI is thinking">
+              <span></span><span></span><span></span>
+            </div>
+            }
+          </div>
+        </article>
+        }
+      </div>
+      }
+    </div>
+
+    <div class="composer-area">
+      @if (error()) {
+      <div class="chat-error" role="alert">{{ error() }}</div>
+      }
+      <div class="composer">
+        <textarea
+          [formControl]="composer"
+          rows="1"
+          maxlength="8000"
+          placeholder="Message Leafmark AI..."
+          aria-label="Message Leafmark AI"
+          (keydown)="handleComposerKeydown($event)"
+        ></textarea>
+        <button
+          type="button"
+          aria-label="Send message"
+          [disabled]="sending() || !composer.value.trim()"
+          (click)="send()"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m5 12 14-7-4 14-3.5-5.5L5 12Z"></path>
+            <path d="m11.5 13.5 3-3"></path>
+          </svg>
+        </button>
+      </div>
+      <p class="composer-note">
+        Leafmark AI can make mistakes. Check important information.
+        <span>Shift + Enter for a new line</span>
+      </p>
+    </div>
+  </section>
+</div>

@@ -34,6 +34,13 @@ main {
   min-height: 560px;
 }
 
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -55,6 +62,32 @@ main {
   color: white;
   background: var(--forest);
   font-style: italic;
+}
+
+.ai-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(36, 76, 59, 0.18);
+  border-radius: 100px;
+  padding: 0.65rem 0.9rem;
+  color: var(--forest);
+  background: rgba(255, 255, 255, 0.48);
+  font-size: 0.76rem;
+  font-weight: 750;
+  text-decoration: none;
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.ai-link:hover {
+  background: white;
+  transform: translateY(-1px);
+}
+
+.ai-link span {
+  color: var(--terracotta);
 }
 
 .hero__copy {

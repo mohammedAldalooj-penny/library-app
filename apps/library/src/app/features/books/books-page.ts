@@ -15,6 +15,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import type {
   Book,
   CreateBookInput,
@@ -31,7 +32,7 @@ import { BooksApiService } from '../../core/books-api.service';
 
 @Component({
   selector: 'app-books-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './books-page.html',
   styleUrl: './books-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
