@@ -1,0 +1,184 @@
+<main>
+  <header class="hero">
+    <div class="hero__content">
+      <a class="brand" href="/" aria-label="Leafmark library home">
+        <span class="brand__mark" aria-hidden="true">L</span>
+        <span>Leafmark</span>
+      </a>
+      <div class="hero__copy">
+        <p class="eyebrow">Your personal collection</p>
+        <h1>Keep every story<br />within reach.</h1>
+        <p>
+          A calm, considered home for the books you own and the ones you never
+          want to forget.
+        </p>
+      </div>
+    </div>
+
+    <section class="book-form" aria-labelledby="form-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">
+            {{ editingId() ? 'Update details' : 'New arrival' }}
+          </p>
+          <h2 id="form-title">
+            {{ editingId() ? 'Edit this book' : 'Add to your shelf' }}
+          </h2>
+        </div>
+        @if (editingId()) {
+        <button class="text-button" type="button" (click)="cancelEdit()">
+          Cancel
+        </button>
+        }
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <label class="field field--wide">
+          <span>Title <b>*</b></span>
+          <input
+            formControlName="title"
+            placeholder="e.g. The Left Hand of Darkness"
+            autocomplete="off"
+          />
+          @if (form.controls.title.touched && form.controls.title.invalid) {
+          <small>Please enter a title.</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Author <b>*</b></span>
+          <input
+            formControlName="author"
+            placeholder="e.g. Ursula K. Le Guin"
+            autocomplete="off"
+          />
+          @if (form.controls.author.touched && form.controls.author.invalid) {
+          <small>Please enter an author.</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Published</span>
+          <input
+            formControlName="publishedYear"
+            type="number"
+            inputmode="numeric"
+            placeholder="1969"
+          />
+        </label>
+
+        <label class="field field--wide">
+          <span>ISBN</span>
+          <input
+            formControlName="isbn"
+            placeholder="978-0-441-47812-5"
+            autocomplete="off"
+          />
+        </label>
+
+        <label class="field field--wide">
+          <span>Notes</span>
+          <textarea
+            formControlName="description"
+            rows="3"
+            placeholder="A thought, an edition detail, or why it belongs here..."
+          ></textarea>
+        </label>
+
+        <button class="primary-button" type="submit" [disabled]="saving()">
+          <span aria-hidden="true">{{ editingId() ? '✓' : '+' }}</span>
+          {{ saving() ? 'Saving…' : editingId() ? 'Save changes' : 'Add book' }}
+        </button>
+      </form>
+    </section>
+  </header>
+
+  <section class="collection" aria-labelledby="collection-title">
+    <div class="collection__topbar">
+      <div>
+        <p class="eyebrow">The collection</p>
+        <h2 id="collection-title">My books</h2>
+      </div>
+      <span class="count">{{ countLabel() }}</span>
+
+      <label class="search">
+        <span class="visually-hidden">Search your books</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path d="m16 16 4 4"></path>
+        </svg>
+        <input
+          [formControl]="search"
+          type="search"
+          placeholder="Search title, author, ISBN…"
+        />
+      </label>
+    </div>
+
+    @if (error()) {
+    <div class="alert" role="alert">{{ error() }}</div>
+    } @if (loading()) {
+    <div class="loading" aria-live="polite">
+      <span></span><span></span><span></span>
+      <p>Opening your library…</p>
+    </div>
+    } @else if (books().length) {
+    <div class="book-grid">
+      @for (book of books(); track trackBook($index, book)) {
+      <article class="book-card">
+        <div class="book-card__cover" aria-hidden="true">
+          <span>{{ book.title.charAt(0) }}</span>
+          <i></i>
+        </div>
+        <div class="book-card__body">
+          <div class="book-card__meta">
+            @if (book.publishedYear) {
+            <span>{{ book.publishedYear }}</span>
+            } @if (book.isbn) {
+            <span>ISBN {{ book.isbn }}</span>
+            }
+          </div>
+          <h3>{{ book.title }}</h3>
+          <p class="author">by {{ book.author }}</p>
+          @if (book.description) {
+          <p class="description">{{ book.description }}</p>
+          }
+          <div class="book-card__actions">
+            <button type="button" (click)="edit(book)">Edit</button>
+            <button
+              class="danger"
+              type="button"
+              [disabled]="deletingId() === book._id"
+              (click)="remove(book)"
+            >
+              {{ deletingId() === book._id ? 'Removing…' : 'Remove' }}
+            </button>
+          </div>
+        </div>
+      </article>
+      }
+    </div>
+    } @else {
+    <div class="empty-state">
+      <div class="empty-state__books" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      @if (search.value) {
+      <h3>No matching books</h3>
+      <p>Try another title, author, or ISBN.</p>
+      <button class="secondary-button" type="button" (click)="clearSearch()">
+        Clear search
+      </button>
+      } @else {
+      <h3>Your first shelf is waiting</h3>
+      <p>Add a book above and begin building your collection.</p>
+      }
+    </div>
+    }
+  </section>
+</main>
+
+<footer>
+  <span>Leafmark</span>
+  <p>A quiet place for remarkable books.</p>
+</footer>
