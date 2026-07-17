@@ -27,6 +27,7 @@ The defaults work without an environment file. To customize them, copy
 
 ```bash
 npm run dev       # Run the API and web app
+npm run seed      # Idempotently add the starter book collection
 npm run build     # Production builds
 npm test          # Unit tests
 npm run lint      # ESLint checks

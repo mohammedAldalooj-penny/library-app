@@ -9,7 +9,8 @@
     "build": "nx run-many -t build --projects=api,library",
     "test": "nx run-many -t test --all",
     "lint": "nx run-many -t lint --all",
-    "format": "nx format:write"
+    "format": "nx format:write",
+    "seed": "node --env-file-if-exists=.env tools/seed-books.mjs"
   },
   "private": true,
   "devDependencies": {
