@@ -9,15 +9,6 @@ import type {
 import type { LibraryMcpTool } from '../books/mcp/books-mcp.server';
 import { renderChartFunctionDeclaration } from './chat-chart';
 
-interface ServiceAccountCredentials {
-  type: 'service_account';
-  project_id: string;
-  private_key: string;
-  client_email: string;
-  token_uri?: string;
-  [key: string]: unknown;
-}
-
 export type ToolExecution =
   | { type: 'result'; output: unknown }
   | { type: 'chart'; chart: ChatChart }
@@ -28,25 +19,8 @@ export type GeminiReplyEvent =
   | { type: 'chart'; chart: ChatChart }
   | { type: 'approval'; approval: ChatToolApproval };
 
-export function parseGoogleCredentials(
-  encoded: string,
-): ServiceAccountCredentials {
-  const credentials = JSON.parse(
-    Buffer.from(encoded, 'base64').toString('utf8'),
-  ) as Partial<ServiceAccountCredentials>;
-
-  if (
-    credentials.type !== 'service_account' ||
-    !credentials.project_id ||
-    !credentials.private_key ||
-    !credentials.client_email
-  ) {
-    throw new Error(
-      'GOOGLE_CREDS_B64 is not a valid service-account credential',
-    );
-  }
-
-  return credentials as ServiceAccountCredentials;
+export function normalizeGooglePrivateKey(privateKey: string): string {
+  return privateKey.replace(/\\n/g, '\n');
 }
 
 @Injectable()
@@ -56,20 +30,26 @@ export class GeminiService {
 
   constructor(private readonly config: ConfigService) {
     this.model = this.config.get('GEMINI_MODEL', 'gemini-3.5-flash');
-    const encoded = this.config.get<string>('GOOGLE_CREDS_B64');
+    const project = this.config.get<string>('GOOGLE_CLOUD_PROJECT');
+    const clientEmail = this.config.get<string>('GOOGLE_CLIENT_EMAIL');
+    const privateKey = this.config.get<string>('GOOGLE_PRIVATE_KEY');
 
-    if (!encoded) {
+    if (!project || !clientEmail || !privateKey) {
       this.client = null;
       return;
     }
 
-    const credentials = parseGoogleCredentials(encoded);
     this.client = new GoogleGenAI({
       apiVersion: 'v1',
       vertexai: true,
-      project: credentials.project_id,
+      project,
       location: 'global',
-      googleAuthOptions: { credentials },
+      googleAuthOptions: {
+        credentials: {
+          client_email: clientEmail,
+          private_key: normalizeGooglePrivateKey(privateKey),
+        },
+      },
     });
   }
 
@@ -83,7 +63,7 @@ export class GeminiService {
   ): AsyncGenerator<GeminiReplyEvent> {
     if (!this.client) {
       throw new ServiceUnavailableException(
-        'Gemini is not configured. Add GOOGLE_CREDS_B64 to the server environment.',
+        'Gemini is not configured. Add GOOGLE_CLOUD_PROJECT, GOOGLE_CLIENT_EMAIL, and GOOGLE_PRIVATE_KEY to the server environment.',
       );
     }
 

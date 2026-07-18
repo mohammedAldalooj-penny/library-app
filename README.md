@@ -21,8 +21,9 @@ Open http://localhost:4200. The Angular development server proxies `/api` to
 the NestJS API at http://localhost:3000.
 
 The defaults work without an environment file. To customize them, copy
-`.env.example` to `.env`. AI chat requires a base64-encoded Google Cloud
-service-account JSON value in `GOOGLE_CREDS_B64`; keep it server-side only.
+`.env.example` to `.env`. AI chat uses Vertex AI and requires
+`GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLIENT_EMAIL`, and `GOOGLE_PRIVATE_KEY`; keep
+the private key server-side only.
 
 ## Commands
 
