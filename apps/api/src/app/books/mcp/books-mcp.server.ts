@@ -157,8 +157,7 @@ export class BooksMcpServer {
           unknown
         >;
         const properties = inputSchema['properties'] as
-          | Record<string, unknown>
-          | undefined;
+          Record<string, unknown> | undefined;
         if (properties) {
           delete properties['approvalId'];
         }

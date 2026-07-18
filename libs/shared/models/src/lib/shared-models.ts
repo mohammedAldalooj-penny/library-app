@@ -87,12 +87,7 @@ export type BookToolName =
   | 'check_in_book';
 
 export type ToolApprovalStatus =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'executing'
-  | 'completed'
-  | 'failed';
+  'pending' | 'approved' | 'rejected' | 'executing' | 'completed' | 'failed';
 
 export interface ChatToolApproval {
   _id: string;
