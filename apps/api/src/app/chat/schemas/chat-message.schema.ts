@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import type { ChatChart } from '@library-app/shared-models';
 import { Types } from 'mongoose';
 import { ChatConversationEntity } from './chat-conversation.schema';
 
@@ -17,6 +18,9 @@ export class ChatMessageEntity {
 
   @Prop({ maxlength: 50000, required: true })
   content!: string;
+
+  @Prop({ type: [Object], default: undefined })
+  charts?: ChatChart[];
 }
 
 export const ChatMessageSchema =

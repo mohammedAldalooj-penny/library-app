@@ -1,8 +1,13 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Content, FunctionDeclaration, GoogleGenAI } from '@google/genai';
-import type { ChatMessage, ChatToolApproval } from '@library-app/shared-models';
+import type {
+  ChatChart,
+  ChatMessage,
+  ChatToolApproval,
+} from '@library-app/shared-models';
 import type { LibraryMcpTool } from '../mcp/books-mcp.server';
+import { renderChartFunctionDeclaration } from './chat-chart';
 
 interface ServiceAccountCredentials {
   type: 'service_account';
@@ -15,10 +20,12 @@ interface ServiceAccountCredentials {
 
 export type ToolExecution =
   | { type: 'result'; output: unknown }
+  | { type: 'chart'; chart: ChatChart }
   | { type: 'approval'; approval: ChatToolApproval };
 
 export type GeminiReplyEvent =
   | { type: 'text'; content: string }
+  | { type: 'chart'; chart: ChatChart }
   | { type: 'approval'; approval: ChatToolApproval };
 
 export function parseGoogleCredentials(
@@ -80,15 +87,23 @@ export class GeminiService {
       );
     }
 
-    const contents: Content[] = history.map((message) => ({
-      role: message.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: message.content }],
-    }));
-    const functionDeclarations: FunctionDeclaration[] = tools.map((tool) => ({
-      name: tool.name,
-      description: tool.description,
-      parametersJsonSchema: tool.inputSchema,
-    }));
+    const contents: Content[] = history.map((message) => {
+      const chartContext = message.charts?.length
+        ? `\n\nCharts rendered with this message:\n${JSON.stringify(message.charts)}`
+        : '';
+      return {
+        role: message.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: `${message.content}${chartContext}` }],
+      };
+    });
+    const functionDeclarations: FunctionDeclaration[] = [
+      ...tools.map((tool) => ({
+        name: tool.name,
+        description: tool.description,
+        parametersJsonSchema: tool.inputSchema,
+      })),
+      renderChartFunctionDeclaration,
+    ];
 
     for (let round = 0; round < 8; round += 1) {
       const response = await this.client.models.generateContent({
@@ -99,7 +114,7 @@ export class GeminiService {
           temperature: 0.3,
           tools: [{ functionDeclarations }],
           systemInstruction:
-            'You are Leafmark AI, a concise personal-library assistant. Use the provided tools for every claim or operation involving the user’s library; never invent catalog contents or ids. Use list_books to find a book before acting when needed. Read-only tools may run immediately. For create, update, delete, checkout, or check-in, call the matching tool once with the exact intended arguments. The application handles user approval, so do not ask for confirmation in prose. Never claim a mutation succeeded until its tool result confirms it. You may answer general questions without tools.',
+            'You are Leafmark AI, a concise personal-library assistant. Use the provided application tools for every claim or operation involving the user’s library; never invent catalog contents or ids. Use list_books to find books and their timestamps before analyzing the collection. Read-only tools may run immediately. For create, update, delete, checkout, or check-in, call the matching tool once with the exact intended arguments. The application handles user approval, so do not ask for confirmation in prose. Never claim a mutation succeeded until its tool result confirms it. When the user requests a graph, chart, trend, distribution, or visual comparison, first retrieve the required application data, aggregate it accurately, then call render_chart. Choose line or area for time trends, bar for comparisons, and pie only for a small part-to-whole dataset. After rendering, briefly explain the main observation in prose. You may answer general questions without tools.',
         },
       });
       const functionCalls = response.functionCalls ?? [];
@@ -128,6 +143,17 @@ export class GeminiService {
         if (execution.type === 'approval') {
           yield execution;
           return;
+        }
+        if (execution.type === 'chart') {
+          yield execution;
+          responseParts.push({
+            functionResponse: {
+              id: call.id,
+              name: call.name,
+              response: { rendered: true },
+            },
+          });
+          continue;
         }
         responseParts.push({
           functionResponse: {

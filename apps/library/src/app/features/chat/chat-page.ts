@@ -18,10 +18,11 @@ import type {
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { ChatApiService } from '../../core/chat-api.service';
 import { MarkdownPipe } from '../../shared/markdown.pipe';
+import { ChatChartComponent } from './chat-chart.component';
 
 @Component({
   selector: 'app-chat-page',
-  imports: [MarkdownPipe, ReactiveFormsModule, RouterLink],
+  imports: [ChatChartComponent, MarkdownPipe, ReactiveFormsModule, RouterLink],
   templateUrl: './chat-page.html',
   styleUrl: './chat-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,7 +48,7 @@ export class ChatPage implements OnInit, OnDestroy {
     'List the books in my library',
     'Add The Left Hand of Darkness by Ursula K. Le Guin',
     'Check out Dune',
-    'Which books in my library are classics?',
+    'Chart the books added to my library over time',
   ];
 
   ngOnInit(): void {
@@ -174,6 +175,17 @@ export class ChatPage implements OnInit, OnDestroy {
             this.updateAssistant(
               assistantId,
               (content) => content + event.content,
+            );
+          } else if (event.type === 'chart') {
+            this.messages.update((messages) =>
+              messages.map((message) =>
+                message._id === assistantId
+                  ? {
+                      ...message,
+                      charts: [...(message.charts ?? []), event.chart],
+                    }
+                  : message,
+              ),
             );
           } else if (event.type === 'done') {
             this.messages.update((messages) =>

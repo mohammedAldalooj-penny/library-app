@@ -41,17 +41,40 @@ export interface ChatSummary {
   updatedAt: string;
 }
 
+export type ChatChartKind = 'line' | 'bar' | 'area' | 'pie';
+
+export interface ChatChartPoint {
+  label: string;
+  value: number;
+}
+
+export interface ChatChartSeries {
+  name: string;
+  data: ChatChartPoint[];
+}
+
+export interface ChatChart {
+  kind: ChatChartKind;
+  title: string;
+  description?: string;
+  xAxisLabel?: string;
+  yAxisLabel?: string;
+  series: ChatChartSeries[];
+}
+
 export interface ChatMessage {
   _id: string;
   chatId: string;
   role: ChatRole;
   content: string;
+  charts?: ChatChart[];
   createdAt: string;
   updatedAt: string;
 }
 
 export type ChatStreamEvent =
   | { type: 'delta'; content: string }
+  | { type: 'chart'; chart: ChatChart }
   | { type: 'approval_required'; approval: ChatToolApproval }
   | { type: 'done'; message: ChatMessage }
   | { type: 'error'; message: string };

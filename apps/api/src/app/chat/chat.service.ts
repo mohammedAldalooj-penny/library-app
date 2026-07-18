@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import type {
   Book,
   BookToolName,
+  ChatChart,
   ChatMessage,
   ChatStreamEvent,
   ChatSummary,
@@ -18,6 +19,7 @@ import { isValidObjectId, Model, Types } from 'mongoose';
 import { BooksMcpServer } from '../mcp/books-mcp.server';
 import { ToolApprovalService } from '../mcp/tool-approval.service';
 import { GeminiService, ToolExecution } from './gemini.service';
+import { parseChatChart, RENDER_CHART_TOOL_NAME } from './chat-chart';
 import { ChatConversationEntity } from './schemas/chat-conversation.schema';
 import { ChatMessageEntity } from './schemas/chat-message.schema';
 
@@ -143,6 +145,7 @@ export class ChatService {
     history.reverse();
     const tools = await this.booksMcp.listTools();
     let response = '';
+    const charts: ChatChart[] = [];
 
     for await (const event of this.gemini.reply(history, tools, (name, args) =>
       this.executeTool(chatId, tools, name, args),
@@ -153,16 +156,30 @@ export class ChatService {
         continue;
       }
 
+      if (event.type === 'chart') {
+        charts.push(event.chart);
+        yield { type: 'chart', chart: event.chart };
+        continue;
+      }
+
       response = `I’m ready to ${event.approval.summary}. Please approve or cancel this action.`;
       yield { type: 'delta', content: response };
       yield { type: 'approval_required', approval: event.approval };
     }
 
+    if (!response.trim() && charts.length) {
+      response = 'Here’s the chart based on your library data.';
+      yield { type: 'delta', content: response };
+    }
     if (!response.trim()) {
       throw new BadRequestException('The assistant did not produce a response');
     }
 
-    const saved = await this.saveAssistantMessage(chatId, response.trim());
+    const saved = await this.saveAssistantMessage(
+      chatId,
+      response.trim(),
+      charts,
+    );
     yield { type: 'done', message: saved };
   }
 
@@ -172,6 +189,15 @@ export class ChatService {
     name: string,
     args: Record<string, unknown>,
   ): Promise<ToolExecution> {
+    if (name === RENDER_CHART_TOOL_NAME) {
+      try {
+        return { type: 'chart', chart: parseChatChart(args) };
+      } catch {
+        throw new BadRequestException(
+          'The assistant produced an invalid chart specification',
+        );
+      }
+    }
     const tool = tools.find((candidate) => candidate.name === name);
     if (!tool) {
       throw new BadRequestException(`Unknown library tool: ${name}`);
@@ -199,11 +225,13 @@ export class ChatService {
   private async saveAssistantMessage(
     chatId: string,
     content: string,
+    charts: ChatChart[] = [],
   ): Promise<ChatMessage> {
     const saved = await this.messageModel.create({
       chatId: new Types.ObjectId(chatId),
       role: 'assistant',
       content,
+      ...(charts.length ? { charts } : {}),
     });
     await this.conversationModel
       .findByIdAndUpdate(chatId, { lastMessage: this.preview(content) })

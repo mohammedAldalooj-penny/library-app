@@ -63,7 +63,7 @@
     <div class="sidebar__footer">
       <span class="status-dot"></span>
       <span>
-        <strong>Gemini 2.5 Flash</strong>
+        <strong>Gemini 3.5 Flash</strong>
         <small>Vertex AI · Connected</small>
       </span>
     </div>
@@ -136,7 +136,9 @@
               class="markdown"
               [innerHTML]="message.content | markdown"
             ></div>
-            } @else {
+            } @for (chart of message.charts ?? []; track $index) {
+            <app-chat-chart [chart]="chart" />
+            } @if (!message.content && !message.charts?.length) {
             <div class="typing" aria-label="Leafmark AI is thinking">
               <span></span><span></span><span></span>
             </div>
