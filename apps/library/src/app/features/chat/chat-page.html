@@ -144,6 +144,42 @@
           </div>
         </article>
         }
+        @if (pendingApproval(); as approval) {
+        <section class="tool-approval" aria-labelledby="tool-approval-title">
+          <div class="tool-approval__icon" aria-hidden="true">✓</div>
+          <div class="tool-approval__content">
+            <p class="tool-approval__eyebrow">Permission required</p>
+            <h2 id="tool-approval-title">Confirm library action</h2>
+            <p>
+              Leafmark AI wants to <strong>{{ approval.summary }}</strong
+              >.
+            </p>
+            @if (approvalDetails(approval)) {
+            <p class="tool-approval__details">
+              {{ approvalDetails(approval) }}
+            </p>
+            }
+            <div class="tool-approval__actions">
+              <button
+                class="approve-action"
+                type="button"
+                [disabled]="resolvingApproval()"
+                (click)="resolveToolApproval(true)"
+              >
+                {{ resolvingApproval() ? 'Working…' : 'Approve action' }}
+              </button>
+              <button
+                class="cancel-action"
+                type="button"
+                [disabled]="resolvingApproval()"
+                (click)="resolveToolApproval(false)"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </section>
+        }
       </div>
       }
     </div>
@@ -157,14 +193,21 @@
           [formControl]="composer"
           rows="1"
           maxlength="8000"
-          placeholder="Message Leafmark AI..."
+          [placeholder]="
+            pendingApproval()
+              ? 'Approve or cancel the pending action first'
+              : 'Message Leafmark AI...'
+          "
+          [disabled]="!!pendingApproval()"
           aria-label="Message Leafmark AI"
           (keydown)="handleComposerKeydown($event)"
         ></textarea>
         <button
           type="button"
           aria-label="Send message"
-          [disabled]="sending() || !composer.value.trim()"
+          [disabled]="
+            sending() || !!pendingApproval() || !composer.value.trim()
+          "
           (click)="send()"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">

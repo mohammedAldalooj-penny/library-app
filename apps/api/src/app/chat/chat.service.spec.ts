@@ -1,7 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { BooksService } from '../books/books.service';
+import { BooksMcpServer } from '../mcp/books-mcp.server';
+import { ToolApprovalService } from '../mcp/tool-approval.service';
 import { ChatService } from './chat.service';
 import { GeminiService } from './gemini.service';
 import { ChatConversationEntity } from './schemas/chat-conversation.schema';
@@ -32,7 +33,8 @@ describe('ChatService', () => {
           useValue: messageModel,
         },
         { provide: GeminiService, useValue: {} },
-        { provide: BooksService, useValue: {} },
+        { provide: BooksMcpServer, useValue: {} },
+        { provide: ToolApprovalService, useValue: {} },
       ],
     }).compile();
     service = module.get(ChatService);

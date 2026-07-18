@@ -4,7 +4,9 @@ import type {
   ChatMessage,
   ChatStreamEvent,
   ChatSummary,
+  ChatToolApproval,
   DeleteChatResponse,
+  ResolveToolApprovalResponse,
 } from '@library-app/shared-models';
 import { Observable } from 'rxjs';
 
@@ -23,6 +25,23 @@ export class ChatApiService {
 
   messages(chatId: string): Observable<ChatMessage[]> {
     return this.http.get<ChatMessage[]>(`${this.endpoint}/${chatId}/messages`);
+  }
+
+  pendingApproval(chatId: string): Observable<ChatToolApproval | null> {
+    return this.http.get<ChatToolApproval | null>(
+      `${this.endpoint}/${chatId}/approval`,
+    );
+  }
+
+  resolveApproval(
+    chatId: string,
+    approvalId: string,
+    approved: boolean,
+  ): Observable<ResolveToolApprovalResponse> {
+    return this.http.post<ResolveToolApprovalResponse>(
+      `${this.endpoint}/${chatId}/approvals/${approvalId}`,
+      { approved },
+    );
   }
 
   remove(chatId: string): Observable<DeleteChatResponse> {

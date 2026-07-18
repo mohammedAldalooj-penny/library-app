@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BooksModule } from './books/books.module';
 import { ChatModule } from './chat/chat.module';
+import { McpModule } from './mcp/mcp.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ChatModule } from './chat/chat.module';
       }),
     }),
     BooksModule,
+    McpModule,
     ChatModule,
   ],
   controllers: [AppController],

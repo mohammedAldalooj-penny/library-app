@@ -504,6 +504,89 @@ button {
   text-transform: uppercase;
 }
 
+.tool-approval {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 0.9rem;
+  margin: -0.5rem 0 2.2rem 3rem;
+  border: 1px solid #d6c9ae;
+  border-radius: 0.85rem;
+  padding: 1.1rem;
+  background: #fffaf0;
+  box-shadow: 0 14px 34px rgba(60, 51, 32, 0.08);
+}
+
+.tool-approval__icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  color: white;
+  background: var(--forest);
+  font-weight: 800;
+}
+
+.tool-approval__eyebrow {
+  margin: 0 0 0.3rem;
+  color: var(--terracotta);
+  font-size: 0.64rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tool-approval h2 {
+  margin: 0 0 0.55rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.1rem;
+}
+
+.tool-approval p:not(.tool-approval__eyebrow) {
+  margin: 0;
+  color: #4c554f;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.tool-approval__details {
+  margin-top: 0.6rem !important;
+  border-left: 2px solid #d8c8a7;
+  padding-left: 0.7rem;
+  color: #6f6551 !important;
+}
+
+.tool-approval__actions {
+  display: flex;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.tool-approval__actions button {
+  border-radius: 0.55rem;
+  padding: 0.62rem 0.9rem;
+  font-size: 0.76rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.tool-approval__actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.approve-action {
+  border: 1px solid var(--forest);
+  color: white;
+  background: var(--forest);
+}
+
+.cancel-action {
+  border: 1px solid #c9c5b9;
+  color: #4f5751;
+  background: white;
+}
+
 .markdown {
   color: #2a352e;
   font-size: 0.94rem;
@@ -747,6 +830,10 @@ button {
   }
 
   .message--user {
+    margin-left: 0;
+  }
+
+  .tool-approval {
     margin-left: 0;
   }
 

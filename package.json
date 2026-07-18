@@ -3,13 +3,20 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "nx run-many -t serve --projects=api,library --parallel=2",
-    "dev:api": "nx serve api",
-    "dev:web": "nx serve library",
-    "build": "nx run-many -t build --projects=api,library",
-    "test": "nx run-many -t test --all",
-    "lint": "nx run-many -t lint --all",
-    "format": "nx format:write",
+    "start": "npm run serve:all",
+    "serve:all": "nx run-many --target=serve --projects=api,library --parallel=2 --output-style=static",
+    "serve:web": "nx serve library --output-style=static",
+    "serve:api": "nx serve api --output-style=static",
+    "build": "nx run-many --target=build --projects=api,library --output-style=static",
+    "build:web": "nx build library",
+    "build:api": "nx build api",
+    "test": "nx run-many --target=test --projects=api,library --output-style=static",
+    "lint": "nx run-many --target=lint --projects=api,library,shared-models --output-style=static",
+    "typecheck": "tsc -p apps/library/tsconfig.app.json --noEmit && tsc -p apps/api/tsconfig.app.json --noEmit && tsc -p libs/shared/models/tsconfig.lib.json --noEmit",
+    "format": "nx format:write --all",
+    "format:check": "nx format:check --all",
+    "health:api": "curl -fsS http://localhost:3000/api/health",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "seed": "node --env-file-if-exists=.env tools/seed-books.mjs"
   },
   "private": true,
@@ -70,6 +77,7 @@
     "@angular/platform-browser": "^22.0.7",
     "@angular/router": "^22.0.7",
     "@google/genai": "^2.12.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@nestjs/common": "^11.1.28",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.28",
@@ -81,6 +89,7 @@
     "marked": "^18.0.6",
     "mongoose": "^9.7.4",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "zod": "^4.4.3"
   }
 }

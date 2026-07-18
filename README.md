@@ -14,7 +14,7 @@ Mongoose, MongoDB, and Gemini on Vertex AI.
 ```bash
 nvm use
 npm install
-npm run dev
+npm start
 ```
 
 Open http://localhost:4200. The Angular development server proxies `/api` to
@@ -27,13 +27,20 @@ service-account JSON value in `GOOGLE_CREDS_B64`; keep it server-side only.
 ## Commands
 
 ```bash
-npm run dev       # Run the API and web app
-npm run seed      # Idempotently add the starter book collection
-npm run build     # Production builds
-npm test          # Unit tests
-npm run lint      # ESLint checks
-npx nx graph      # Explore the monorepo graph
+npm start               # Run the API and web app
+npm run serve:web       # Run only Angular
+npm run serve:api       # Run only NestJS
+npm run seed            # Idempotently add the starter books
+npm run health:api      # Confirm the running API is healthy
+npm run check           # Lint, type-check, test, and build everything
+npm run build:web       # Build only Angular
+npm run build:api       # Build only NestJS
+npm run format          # Format the workspace
+npm run format:check    # Check formatting without changing files
 ```
+
+Nx caches repeatable checks and builds, so subsequent runs are typically
+faster.
 
 ## Structure
 

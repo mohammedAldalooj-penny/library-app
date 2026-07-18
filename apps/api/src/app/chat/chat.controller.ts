@@ -13,10 +13,13 @@ import type {
   ChatMessage,
   ChatStreamEvent,
   ChatSummary,
+  ChatToolApproval,
   DeleteChatResponse,
+  ResolveToolApprovalResponse,
 } from '@library-app/shared-models';
 import type { Response } from 'express';
 import { ChatService } from './chat.service';
+import { ResolveToolApprovalDto } from './dto/resolve-tool-approval.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 
 @Controller('chats')
@@ -38,6 +41,22 @@ export class ChatController {
   @Get(':id/messages')
   findMessages(@Param('id') id: string): Promise<ChatMessage[]> {
     return this.chatService.findMessages(id);
+  }
+
+  @Get(':id/approval')
+  findPendingApproval(
+    @Param('id') id: string,
+  ): Promise<ChatToolApproval | null> {
+    return this.chatService.findPendingApproval(id);
+  }
+
+  @Post(':id/approvals/:approvalId')
+  resolveApproval(
+    @Param('id') id: string,
+    @Param('approvalId') approvalId: string,
+    @Body() input: ResolveToolApprovalDto,
+  ): Promise<ResolveToolApprovalResponse> {
+    return this.chatService.resolveApproval(id, approvalId, input.approved);
   }
 
   @Post(':id/messages')

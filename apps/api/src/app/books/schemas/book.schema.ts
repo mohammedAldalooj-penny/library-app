@@ -19,6 +19,16 @@ export class BookEntity {
 
   @Prop({ min: 0, max: new Date().getFullYear() + 1 })
   publishedYear?: number;
+
+  @Prop({
+    type: String,
+    enum: ['available', 'checked_out'],
+    default: 'available',
+  })
+  status!: 'available' | 'checked_out';
+
+  @Prop({ type: Date })
+  checkedOutAt?: Date;
 }
 
 export const BookSchema = SchemaFactory.createForClass(BookEntity);

@@ -87,6 +87,24 @@ export class BooksService {
     return { deleted: true };
   }
 
+  async checkout(id: string): Promise<Book> {
+    this.assertValidId(id);
+    const current = await this.findOne(id);
+    if (current.status === 'checked_out') {
+      throw new ConflictException('Book is already checked out');
+    }
+    return this.setCheckoutStatus(id, 'checked_out', new Date());
+  }
+
+  async checkIn(id: string): Promise<Book> {
+    this.assertValidId(id);
+    const current = await this.findOne(id);
+    if (current.status !== 'checked_out') {
+      throw new ConflictException('Book is not checked out');
+    }
+    return this.setCheckoutStatus(id, 'available');
+  }
+
   private assertValidId(id: string): void {
     if (!isValidObjectId(id)) {
       throw new BadRequestException('Invalid book id');
@@ -126,5 +144,23 @@ export class BooksService {
     if ((error as MongoDuplicateError)?.code === 11000) {
       throw new ConflictException('A book with this ISBN already exists');
     }
+  }
+
+  private async setCheckoutStatus(
+    id: string,
+    status: 'available' | 'checked_out',
+    checkedOutAt?: Date,
+  ): Promise<Book> {
+    const update = checkedOutAt
+      ? { $set: { status, checkedOutAt } }
+      : { $set: { status }, $unset: { checkedOutAt: 1 } };
+    const book = await this.bookModel
+      .findByIdAndUpdate(id, update, { returnDocument: 'after' })
+      .lean<Book>()
+      .exec();
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+    return book;
   }
 }

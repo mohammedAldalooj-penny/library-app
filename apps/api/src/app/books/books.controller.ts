@@ -37,6 +37,16 @@ export class BooksController {
     return this.booksService.update(id, input);
   }
 
+  @Post(':id/checkout')
+  checkout(@Param('id') id: string): Promise<Book> {
+    return this.booksService.checkout(id);
+  }
+
+  @Post(':id/check-in')
+  checkIn(@Param('id') id: string): Promise<Book> {
+    return this.booksService.checkIn(id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string): Promise<DeleteBookResponse> {
     return this.booksService.remove(id);

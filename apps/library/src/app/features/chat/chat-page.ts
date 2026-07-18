@@ -10,8 +10,12 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import type { ChatMessage, ChatSummary } from '@library-app/shared-models';
-import { firstValueFrom } from 'rxjs';
+import type {
+  ChatMessage,
+  ChatSummary,
+  ChatToolApproval,
+} from '@library-app/shared-models';
+import { firstValueFrom, forkJoin } from 'rxjs';
 import { ChatApiService } from '../../core/chat-api.service';
 import { MarkdownPipe } from '../../shared/markdown.pipe';
 
@@ -34,13 +38,15 @@ export class ChatPage implements OnInit, OnDestroy {
   protected readonly messages = signal<ChatMessage[]>([]);
   protected readonly loadingHistory = signal(true);
   protected readonly sending = signal(false);
+  protected readonly resolvingApproval = signal(false);
+  protected readonly pendingApproval = signal<ChatToolApproval | null>(null);
   protected readonly sidebarOpen = signal(false);
   protected readonly error = signal('');
   protected readonly composer = new FormControl('', { nonNullable: true });
   protected readonly suggestions = [
-    'What should I read next from my library?',
-    'Recommend three books similar to Dune',
-    'Help me build a one-month reading plan',
+    'List the books in my library',
+    'Add The Left Hand of Darkness by Ursula K. Le Guin',
+    'Check out Dune',
     'Which books in my library are classics?',
   ];
 
@@ -61,6 +67,7 @@ export class ChatPage implements OnInit, OnDestroy {
       this.chats.update((chats) => [chat, ...chats]);
       this.activeChatId.set(chat._id);
       this.messages.set([]);
+      this.pendingApproval.set(null);
       this.error.set('');
       this.sidebarOpen.set(false);
     } catch {
@@ -78,7 +85,14 @@ export class ChatPage implements OnInit, OnDestroy {
     this.error.set('');
     this.sidebarOpen.set(false);
     try {
-      this.messages.set(await firstValueFrom(this.chatApi.messages(chat._id)));
+      const state = await firstValueFrom(
+        forkJoin({
+          messages: this.chatApi.messages(chat._id),
+          approval: this.chatApi.pendingApproval(chat._id),
+        }),
+      );
+      this.messages.set(state.messages);
+      this.pendingApproval.set(state.approval);
       this.scrollToBottom();
     } catch {
       this.error.set('Unable to load this conversation.');
@@ -111,7 +125,7 @@ export class ChatPage implements OnInit, OnDestroy {
 
   protected async send(content = this.composer.value): Promise<void> {
     const prompt = content.trim();
-    if (!prompt || this.sending()) {
+    if (!prompt || this.sending() || this.pendingApproval()) {
       return;
     }
 
@@ -167,6 +181,8 @@ export class ChatPage implements OnInit, OnDestroy {
                 message._id === assistantId ? event.message : message,
               ),
             );
+          } else if (event.type === 'approval_required') {
+            this.pendingApproval.set(event.approval);
           } else {
             throw new Error(event.message);
           }
@@ -192,6 +208,38 @@ export class ChatPage implements OnInit, OnDestroy {
     }
   }
 
+  protected async resolveToolApproval(approved: boolean): Promise<void> {
+    const approval = this.pendingApproval();
+    const chatId = this.activeChatId();
+    if (!approval || !chatId || this.resolvingApproval()) {
+      return;
+    }
+    this.resolvingApproval.set(true);
+    this.error.set('');
+    try {
+      const response = await firstValueFrom(
+        this.chatApi.resolveApproval(chatId, approval._id, approved),
+      );
+      this.pendingApproval.set(null);
+      this.messages.update((messages) => [...messages, response.message]);
+      this.chats.set(await firstValueFrom(this.chatApi.list()));
+      this.scrollToBottom();
+    } catch (error) {
+      this.pendingApproval.set(
+        await firstValueFrom(this.chatApi.pendingApproval(chatId)).catch(
+          () => null,
+        ),
+      );
+      this.error.set(
+        error instanceof Error
+          ? error.message
+          : 'Unable to resolve this action.',
+      );
+    } finally {
+      this.resolvingApproval.set(false);
+    }
+  }
+
   protected handleComposerKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -209,6 +257,13 @@ export class ChatPage implements OnInit, OnDestroy {
 
   protected trackMessage(_: number, message: ChatMessage): string {
     return message._id;
+  }
+
+  protected approvalDetails(approval: ChatToolApproval): string {
+    return Object.entries(approval.arguments)
+      .filter(([key]) => key !== 'id')
+      .map(([key, value]) => `${this.humanize(key)}: ${String(value)}`)
+      .join(' · ');
   }
 
   private async initialize(): Promise<void> {
@@ -245,5 +300,11 @@ export class ChatPage implements OnInit, OnDestroy {
       const viewport = this.messageViewport?.nativeElement;
       viewport?.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
     });
+  }
+
+  private humanize(value: string): string {
+    return value
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (letter) => letter.toUpperCase());
   }
 }

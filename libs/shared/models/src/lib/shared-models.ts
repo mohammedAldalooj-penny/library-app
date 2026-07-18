@@ -5,6 +5,8 @@ export interface Book {
   isbn?: string;
   description?: string;
   publishedYear?: number;
+  status?: 'available' | 'checked_out';
+  checkedOutAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -50,8 +52,41 @@ export interface ChatMessage {
 
 export type ChatStreamEvent =
   | { type: 'delta'; content: string }
+  | { type: 'approval_required'; approval: ChatToolApproval }
   | { type: 'done'; message: ChatMessage }
   | { type: 'error'; message: string };
+
+export type BookToolName =
+  | 'create_book'
+  | 'update_book'
+  | 'delete_book'
+  | 'checkout_book'
+  | 'check_in_book';
+
+export type ToolApprovalStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'executing'
+  | 'completed'
+  | 'failed';
+
+export interface ChatToolApproval {
+  _id: string;
+  chatId: string;
+  toolName: BookToolName;
+  arguments: Record<string, unknown>;
+  summary: string;
+  status: ToolApprovalStatus;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResolveToolApprovalResponse {
+  approval: ChatToolApproval;
+  message: ChatMessage;
+}
 
 export interface DeleteChatResponse {
   deleted: true;
