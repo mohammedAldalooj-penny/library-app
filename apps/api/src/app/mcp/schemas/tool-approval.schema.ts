@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import type { BookToolName, ToolApprovalStatus } from '@library-app/shared-models';
+import type {
+  BookToolName,
+  ToolApprovalStatus,
+} from '@library-app/shared-models';
 import { SchemaTypes, Types } from 'mongoose';
 
 @Schema({ collection: 'tool_approvals', timestamps: true, versionKey: false })
@@ -21,7 +24,14 @@ export class ToolApprovalEntity {
 
   @Prop({
     type: String,
-    enum: ['pending', 'approved', 'rejected', 'executing', 'completed', 'failed'],
+    enum: [
+      'pending',
+      'approved',
+      'rejected',
+      'executing',
+      'completed',
+      'failed',
+    ],
     default: 'pending',
     index: true,
   })

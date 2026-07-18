@@ -107,6 +107,7 @@ export class ChatService {
       throw new NotFoundException('Chat not found');
     }
     await this.messageModel.deleteMany({ chatId: deleted._id }).exec();
+    await this.approvals.removeForChat(chatId);
     return { deleted: true };
   }
 
@@ -143,10 +144,8 @@ export class ChatService {
     const tools = await this.booksMcp.listTools();
     let response = '';
 
-    for await (const event of this.gemini.reply(
-      history,
-      tools,
-      (name, args) => this.executeTool(chatId, tools, name, args),
+    for await (const event of this.gemini.reply(history, tools, (name, args) =>
+      this.executeTool(chatId, tools, name, args),
     )) {
       if (event.type === 'text') {
         response += event.content;
@@ -178,7 +177,10 @@ export class ChatService {
       throw new BadRequestException(`Unknown library tool: ${name}`);
     }
     if (tool.readOnly) {
-      return { type: 'result', output: await this.booksMcp.callTool(name, args) };
+      return {
+        type: 'result',
+        output: await this.booksMcp.callTool(name, args),
+      };
     }
     if (!MUTATING_TOOLS.has(name as BookToolName)) {
       throw new BadRequestException(`Unsupported mutating tool: ${name}`);

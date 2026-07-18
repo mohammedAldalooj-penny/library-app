@@ -23,8 +23,16 @@ export class McpController {
   }
 
   @Get()
+  getNotAllowed(@Res() response: Response): void {
+    this.methodNotAllowed(response);
+  }
+
   @Delete()
-  methodNotAllowed(@Res() response: Response): void {
+  deleteNotAllowed(@Res() response: Response): void {
+    this.methodNotAllowed(response);
+  }
+
+  private methodNotAllowed(response: Response): void {
     response.status(405).json({
       jsonrpc: '2.0',
       error: { code: -32000, message: 'Method not allowed' },

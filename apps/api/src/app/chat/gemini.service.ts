@@ -1,10 +1,6 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  Content,
-  FunctionDeclaration,
-  GoogleGenAI,
-} from '@google/genai';
+import { Content, FunctionDeclaration, GoogleGenAI } from '@google/genai';
 import type { ChatMessage, ChatToolApproval } from '@library-app/shared-models';
 import type { LibraryMcpTool } from '../mcp/books-mcp.server';
 
@@ -113,7 +109,9 @@ export class GeminiService {
           yield { type: 'text', content: text };
           return;
         }
-        throw new ServiceUnavailableException('Gemini returned an empty response');
+        throw new ServiceUnavailableException(
+          'Gemini returned an empty response',
+        );
       }
 
       const modelContent = response.candidates?.[0]?.content;

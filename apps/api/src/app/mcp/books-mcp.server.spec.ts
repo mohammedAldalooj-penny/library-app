@@ -44,9 +44,9 @@ describe('BooksMcpServer', () => {
   it('calls the shared BooksService for reads', async () => {
     books.findAll.mockResolvedValue([{ _id: '1', title: 'Dune' }]);
 
-    await expect(server.callTool('list_books', { query: 'dune' })).resolves.toEqual(
-      [{ _id: '1', title: 'Dune' }],
-    );
+    await expect(
+      server.callTool('list_books', { query: 'dune' }),
+    ).resolves.toEqual([{ _id: '1', title: 'Dune' }]);
     expect(books.findAll).toHaveBeenCalledWith('dune');
   });
 
@@ -72,6 +72,19 @@ describe('BooksMcpServer', () => {
     );
     expect(books.create).toHaveBeenCalledWith(args);
     expect(approvals.complete).toHaveBeenCalledWith('approval-1');
+  });
+
+  it('does not call BooksService when approval validation fails', async () => {
+    approvals.consume.mockRejectedValue(new Error('not approved'));
+
+    await expect(
+      server.callTool('create_book', {
+        title: 'Dune',
+        author: 'Frank Herbert',
+        approvalId: 'approval-1',
+      }),
+    ).rejects.toThrow('not approved');
+    expect(books.create).not.toHaveBeenCalled();
   });
 });
 

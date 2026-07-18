@@ -5,7 +5,7 @@ export interface Book {
   isbn?: string;
   description?: string;
   publishedYear?: number;
-  status?: 'available' | 'checked_out';
+  status: 'available' | 'checked_out';
   checkedOutAt?: string;
   createdAt: string;
   updatedAt: string;

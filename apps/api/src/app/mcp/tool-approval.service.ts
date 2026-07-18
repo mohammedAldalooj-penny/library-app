@@ -5,7 +5,7 @@ import type {
   BookToolName,
   ChatToolApproval,
 } from '@library-app/shared-models';
-import { Model, Types } from 'mongoose';
+import { isValidObjectId, Model, Types } from 'mongoose';
 import { ToolApprovalEntity } from './schemas/tool-approval.schema';
 
 @Injectable()
@@ -51,13 +51,12 @@ export class ToolApprovalService {
       .lean<ChatToolApproval>()
       .exec();
     return approval
-      ? this.toPublicApproval(
-          approval as unknown as Record<string, unknown>,
-        )
+      ? this.toPublicApproval(approval as unknown as Record<string, unknown>)
       : null;
   }
 
   async findById(approvalId: string): Promise<ChatToolApproval> {
+    this.assertApprovalId(approvalId);
     const approval = await this.approvalModel
       .findById(approvalId)
       .lean<ChatToolApproval>()
@@ -70,17 +69,11 @@ export class ToolApprovalService {
     );
   }
 
-  async approve(
-    chatId: string,
-    approvalId: string,
-  ): Promise<ChatToolApproval> {
+  async approve(chatId: string, approvalId: string): Promise<ChatToolApproval> {
     return this.setDecision(chatId, approvalId, 'approved');
   }
 
-  async reject(
-    chatId: string,
-    approvalId: string,
-  ): Promise<ChatToolApproval> {
+  async reject(chatId: string, approvalId: string): Promise<ChatToolApproval> {
     return this.setDecision(chatId, approvalId, 'rejected');
   }
 
@@ -89,6 +82,7 @@ export class ToolApprovalService {
     toolName: BookToolName,
     args: Record<string, unknown>,
   ): Promise<void> {
+    this.assertApprovalId(approvalId);
     const approval = await this.approvalModel
       .findOneAndUpdate(
         {
@@ -118,11 +112,18 @@ export class ToolApprovalService {
     await this.finish(approvalId, 'failed');
   }
 
+  async removeForChat(chatId: string): Promise<void> {
+    await this.approvalModel
+      .deleteMany({ chatId: new Types.ObjectId(chatId) })
+      .exec();
+  }
+
   private async setDecision(
     chatId: string,
     approvalId: string,
     status: 'approved' | 'rejected',
   ): Promise<ChatToolApproval> {
+    this.assertApprovalId(approvalId);
     const approval = await this.approvalModel
       .findOneAndUpdate(
         {
@@ -148,6 +149,7 @@ export class ToolApprovalService {
     approvalId: string,
     status: 'completed' | 'failed',
   ): Promise<ChatToolApproval> {
+    this.assertApprovalId(approvalId);
     const approval = await this.approvalModel
       .findOneAndUpdate(
         { _id: new Types.ObjectId(approvalId), status: 'executing' },
@@ -164,12 +166,16 @@ export class ToolApprovalService {
     );
   }
 
-  private toPublicApproval(
-    value: Record<string, unknown>,
-  ): ChatToolApproval {
+  private toPublicApproval(value: Record<string, unknown>): ChatToolApproval {
     const approval = { ...value };
     delete approval['argumentsHash'];
     return approval as unknown as ChatToolApproval;
+  }
+
+  private assertApprovalId(approvalId: string): void {
+    if (!isValidObjectId(approvalId)) {
+      throw new ConflictException('Tool approval was not found');
+    }
   }
 }
 

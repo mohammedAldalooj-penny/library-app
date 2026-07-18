@@ -42,11 +42,12 @@ export class BooksService {
         }
       : {};
 
-    return this.bookModel
+    const books = await this.bookModel
       .find(filter)
       .sort({ createdAt: -1 })
       .lean<Book[]>()
       .exec();
+    return books.map((book) => this.withStatusDefault(book));
   }
 
   async findOne(id: string): Promise<Book> {
@@ -55,7 +56,7 @@ export class BooksService {
     if (!book) {
       throw new NotFoundException('Book not found');
     }
-    return book;
+    return this.withStatusDefault(book);
   }
 
   async update(id: string, input: UpdateBookDto): Promise<Book> {
@@ -71,7 +72,7 @@ export class BooksService {
       if (!book) {
         throw new NotFoundException('Book not found');
       }
-      return book;
+      return this.withStatusDefault(book);
     } catch (error) {
       this.handleDuplicate(error);
       throw error;
@@ -162,5 +163,9 @@ export class BooksService {
       throw new NotFoundException('Book not found');
     }
     return book;
+  }
+
+  private withStatusDefault(book: Book): Book {
+    return { ...book, status: book.status ?? 'available' };
   }
 }

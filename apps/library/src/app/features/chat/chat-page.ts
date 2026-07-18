@@ -67,7 +67,7 @@ export class ChatPage implements OnInit, OnDestroy {
       this.chats.update((chats) => [chat, ...chats]);
       this.activeChatId.set(chat._id);
       this.messages.set([]);
-      this.pendingApproval.set(null);
+      this.setPendingApproval(null);
       this.error.set('');
       this.sidebarOpen.set(false);
     } catch {
@@ -92,7 +92,7 @@ export class ChatPage implements OnInit, OnDestroy {
         }),
       );
       this.messages.set(state.messages);
-      this.pendingApproval.set(state.approval);
+      this.setPendingApproval(state.approval);
       this.scrollToBottom();
     } catch {
       this.error.set('Unable to load this conversation.');
@@ -182,7 +182,7 @@ export class ChatPage implements OnInit, OnDestroy {
               ),
             );
           } else if (event.type === 'approval_required') {
-            this.pendingApproval.set(event.approval);
+            this.setPendingApproval(event.approval);
           } else {
             throw new Error(event.message);
           }
@@ -220,12 +220,12 @@ export class ChatPage implements OnInit, OnDestroy {
       const response = await firstValueFrom(
         this.chatApi.resolveApproval(chatId, approval._id, approved),
       );
-      this.pendingApproval.set(null);
+      this.setPendingApproval(null);
       this.messages.update((messages) => [...messages, response.message]);
       this.chats.set(await firstValueFrom(this.chatApi.list()));
       this.scrollToBottom();
     } catch (error) {
-      this.pendingApproval.set(
+      this.setPendingApproval(
         await firstValueFrom(this.chatApi.pendingApproval(chatId)).catch(
           () => null,
         ),
@@ -293,6 +293,15 @@ export class ChatPage implements OnInit, OnDestroy {
           : message,
       ),
     );
+  }
+
+  private setPendingApproval(approval: ChatToolApproval | null): void {
+    this.pendingApproval.set(approval);
+    if (approval) {
+      this.composer.disable({ emitEvent: false });
+    } else {
+      this.composer.enable({ emitEvent: false });
+    }
   }
 
   private scrollToBottom(): void {

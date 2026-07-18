@@ -17,6 +17,9 @@ describe('ChatService', () => {
   const messageModel = {
     deleteMany: jest.fn(),
   };
+  const approvals = {
+    removeForChat: jest.fn(),
+  };
   let service: ChatService;
 
   beforeEach(async () => {
@@ -34,7 +37,7 @@ describe('ChatService', () => {
         },
         { provide: GeminiService, useValue: {} },
         { provide: BooksMcpServer, useValue: {} },
-        { provide: ToolApprovalService, useValue: {} },
+        { provide: ToolApprovalService, useValue: approvals },
       ],
     }).compile();
     service = module.get(ChatService);
@@ -68,5 +71,8 @@ describe('ChatService', () => {
       deleted: true,
     });
     expect(messageModel.deleteMany).toHaveBeenCalled();
+    expect(approvals.removeForChat).toHaveBeenCalledWith(
+      '507f1f77bcf86cd799439011',
+    );
   });
 });

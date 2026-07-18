@@ -57,9 +57,26 @@ faster.
 - `GET /api/books/:id`
 - `POST /api/books`
 - `PATCH /api/books/:id`
+- `POST /api/books/:id/checkout`
+- `POST /api/books/:id/check-in`
 - `DELETE /api/books/:id`
 - `GET /api/chats`
 - `POST /api/chats`
 - `GET /api/chats/:id/messages`
 - `POST /api/chats/:id/messages` (streaming NDJSON response)
+- `GET /api/chats/:id/approval`
+- `POST /api/chats/:id/approvals/:approvalId`
 - `DELETE /api/chats/:id`
+- `POST /api/mcp` (stateless Streamable HTTP MCP server)
+
+## MCP library tools
+
+The chat discovers and calls `list_books`, `get_book`, `create_book`,
+`update_book`, `delete_book`, `checkout_book`, and `check_in_book` through the
+MCP server. Both REST and MCP are adapters over the same `BooksService`; the AI
+does not query MongoDB directly.
+
+Read-only tools run immediately. Every write creates a short-lived approval
+bound to the exact tool and arguments. The user must approve it in chat, and
+the MCP handler validates and consumes that approval once before it calls the
+service.

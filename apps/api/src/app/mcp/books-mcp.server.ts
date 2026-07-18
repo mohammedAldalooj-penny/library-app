@@ -89,11 +89,8 @@ export class BooksMcpServer {
         annotations: { readOnlyHint: false, destructiveHint: false },
       },
       async ({ approvalId, id, ...input }) =>
-        this.executeApproved(
-          approvalId,
-          'update_book',
-          { id, ...input },
-          () => this.books.update(id, input),
+        this.executeApproved(approvalId, 'update_book', { id, ...input }, () =>
+          this.books.update(id, input),
         ),
     );
 

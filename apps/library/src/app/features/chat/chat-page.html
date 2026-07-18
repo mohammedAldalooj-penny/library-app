@@ -143,17 +143,13 @@
             }
           </div>
         </article>
-        }
-        @if (pendingApproval(); as approval) {
+        } @if (pendingApproval(); as approval) {
         <section class="tool-approval" aria-labelledby="tool-approval-title">
           <div class="tool-approval__icon" aria-hidden="true">✓</div>
           <div class="tool-approval__content">
             <p class="tool-approval__eyebrow">Permission required</p>
             <h2 id="tool-approval-title">Confirm library action</h2>
-            <p>
-              Leafmark AI wants to <strong>{{ approval.summary }}</strong
-              >.
-            </p>
+            <p>Leafmark AI wants to <strong>{{ approval.summary }}</strong>.</p>
             @if (approvalDetails(approval)) {
             <p class="tool-approval__details">
               {{ approvalDetails(approval) }}
@@ -198,7 +194,6 @@
               ? 'Approve or cancel the pending action first'
               : 'Message Leafmark AI...'
           "
-          [disabled]="!!pendingApproval()"
           aria-label="Message Leafmark AI"
           (keydown)="handleComposerKeydown($event)"
         ></textarea>
