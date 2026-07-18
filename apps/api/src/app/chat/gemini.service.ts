@@ -48,7 +48,7 @@ export class GeminiService {
   private readonly model: string;
 
   constructor(private readonly config: ConfigService) {
-    this.model = this.config.get('GEMINI_MODEL', 'gemini-2.5-flash');
+    this.model = this.config.get('GEMINI_MODEL', 'gemini-3.5-flash');
     const encoded = this.config.get<string>('GOOGLE_CREDS_B64');
 
     if (!encoded) {
