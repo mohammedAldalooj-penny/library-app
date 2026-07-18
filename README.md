@@ -50,6 +50,11 @@ faster.
 - `apps/library-e2e` — Playwright browser tests
 - `apps/api-e2e` — Jest API tests
 
+The API is organized by feature. Under `apps/api/src/app/books`, the `http`
+and `mcp` adapters sit beside the shared `BooksService`, so both protocols use
+the same business rules. The top-level `mcp` feature contains only the generic
+MCP transport and cross-cutting approval infrastructure.
+
 ## API
 
 - `GET /api/health`

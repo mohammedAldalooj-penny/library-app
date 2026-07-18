@@ -6,7 +6,7 @@ import type {
   ChatMessage,
   ChatToolApproval,
 } from '@library-app/shared-models';
-import type { LibraryMcpTool } from '../mcp/books-mcp.server';
+import type { LibraryMcpTool } from '../books/mcp/books-mcp.server';
 import { renderChartFunctionDeclaration } from './chat-chart';
 
 interface ServiceAccountCredentials {

@@ -16,8 +16,8 @@ import type {
   ResolveToolApprovalResponse,
 } from '@library-app/shared-models';
 import { isValidObjectId, Model, Types } from 'mongoose';
-import { BooksMcpServer } from '../mcp/books-mcp.server';
-import { ToolApprovalService } from '../mcp/tool-approval.service';
+import { BooksMcpServer } from '../books/mcp/books-mcp.server';
+import { ToolApprovalService } from '../mcp/approvals/tool-approval.service';
 import { GeminiService, ToolExecution } from './gemini.service';
 import { parseChatChart, RENDER_CHART_TOOL_NAME } from './chat-chart';
 import { ChatConversationEntity } from './schemas/chat-conversation.schema';

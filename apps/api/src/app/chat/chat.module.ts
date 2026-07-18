@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { McpModule } from '../mcp/mcp.module';
+import { BooksModule } from '../books/books.module';
+import { ToolApprovalModule } from '../mcp/approvals/tool-approval.module';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { GeminiService } from './gemini.service';
@@ -15,7 +16,8 @@ import {
 
 @Module({
   imports: [
-    McpModule,
+    BooksModule,
+    ToolApprovalModule,
     MongooseModule.forFeature([
       {
         name: ChatConversationEntity.name,

@@ -5,8 +5,8 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import * as z from 'zod/v4';
-import { BooksService } from '../books/books.service';
-import { ToolApprovalService } from './tool-approval.service';
+import { ToolApprovalService } from '../../mcp/approvals/tool-approval.service';
+import { BooksService } from '../books.service';
 
 export interface LibraryMcpTool {
   name: string;

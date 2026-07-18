@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Post, Req, Res } from '@nestjs/common';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Request, Response } from 'express';
-import { BooksMcpServer } from './books-mcp.server';
+import { BooksMcpServer } from '../books/mcp/books-mcp.server';
 
 @Controller('mcp')
 export class McpController {

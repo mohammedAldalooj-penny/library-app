@@ -5,10 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { Book, DeleteBookResponse } from '@library-app/shared-models';
+import type {
+  Book,
+  CreateBookInput,
+  DeleteBookResponse,
+  UpdateBookInput,
+} from '@library-app/shared-models';
 import { isValidObjectId, Model } from 'mongoose';
-import { CreateBookDto } from './dto/create-book.dto';
-import { UpdateBookDto } from './dto/update-book.dto';
 import { BookEntity } from './schemas/book.schema';
 
 type MongoDuplicateError = Error & { code?: number };
@@ -20,7 +23,7 @@ export class BooksService {
     private readonly bookModel: Model<BookEntity>,
   ) {}
 
-  async create(input: CreateBookDto): Promise<Book> {
+  async create(input: CreateBookInput): Promise<Book> {
     try {
       const created = await this.bookModel.create(
         this.cleanOptionalFields(input),
@@ -59,7 +62,7 @@ export class BooksService {
     return this.withStatusDefault(book);
   }
 
-  async update(id: string, input: UpdateBookDto): Promise<Book> {
+  async update(id: string, input: UpdateBookInput): Promise<Book> {
     this.assertValidId(id);
     try {
       const book = await this.bookModel
@@ -120,7 +123,7 @@ export class BooksService {
     ) as T;
   }
 
-  private buildUpdate(input: UpdateBookDto): {
+  private buildUpdate(input: UpdateBookInput): {
     $set: Record<string, unknown>;
     $unset: Record<string, 1>;
   } {

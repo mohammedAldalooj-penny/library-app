@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { BooksMcpServer } from '../mcp/books-mcp.server';
-import { ToolApprovalService } from '../mcp/tool-approval.service';
+import { BooksMcpServer } from '../books/mcp/books-mcp.server';
+import { ToolApprovalService } from '../mcp/approvals/tool-approval.service';
 import { ChatService } from './chat.service';
 import { GeminiService } from './gemini.service';
 import { ChatConversationEntity } from './schemas/chat-conversation.schema';

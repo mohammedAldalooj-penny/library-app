@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import type { Book, DeleteBookResponse } from '@library-app/shared-models';
-import { BooksService } from './books.service';
+import { BooksService } from '../books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 

@@ -1,6 +1,9 @@
-import { BooksService } from '../books/books.service';
+import {
+  hashArguments,
+  ToolApprovalService,
+} from '../../mcp/approvals/tool-approval.service';
+import { BooksService } from '../books.service';
 import { BooksMcpServer } from './books-mcp.server';
-import { hashArguments, ToolApprovalService } from './tool-approval.service';
 
 describe('BooksMcpServer', () => {
   const books = {
